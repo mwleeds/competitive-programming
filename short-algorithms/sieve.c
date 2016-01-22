@@ -1,32 +1,37 @@
+
+/* This is a pretty efficient algorithm for finding prime numbers under n
+ * called the Sieve of Eratosthenes. The result is a boolean array.
+ */
+
 #include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
 
-#define N 1000
+#define N 1000000
+typedef unsigned int uint;
 
-int isPrime[N];
+int main() {
 
-int main(void) {
-	for (int i=2; i<N; i++) {
-		isPrime[i] = 1;
+    bool isPrime[N];
+	for (uint i=2; i<N; ++i) {
+		isPrime[i] = true;
 	}
 
-    int np = 0;
-
-    static int primes[1000];
-
-	for (int i=2; i*i < N; i++) {
+    uint sqrt_N = (uint)sqrt((double) N);
+	for (uint i = 2; i < sqrt_N; ++i) {
 		if (isPrime[i]) {
-			for (int j=2; j*i<N; j++) {
-				isPrime[j*i] = 0;
+			for (uint j = 2; j*i < N; ++j) {
+				isPrime[j*i] = false;
 			}
 		}
 	}
-
-	for (int i=2; i<N; i++) {
-        if (isPrime[i]) primes[np++] = i;
+    
+    uint num_primes = 0;
+	for (uint i = 2; i < N; ++i) {
+        if (isPrime[i]) num_primes++;
 	}
 
-	for (int i=0; i<np; i++) {
-	    printf("%d\n", primes[i]);
-	}
-
+    printf("found %d primes below %d\n", num_primes, N);
+    
+    return 0;
 }
