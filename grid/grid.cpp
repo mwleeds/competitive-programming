@@ -6,10 +6,15 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <vector>
+
+typedef struct move {
+  int i; // row
+  int j; // column
+  int count; // moves so far
+} move;
 
 using namespace std;
-
-void check_adjacent(int** grid, int** moves, int i, int j, int n, int m);
 
 int main() {
   // get the grid's dimensions from stdin
@@ -33,76 +38,71 @@ int main() {
     }
   }
 
-  /* print out the grid
+  // record whether squares have been visited in the search
+  bool** visited = new bool*[n];
   for (int i = 0; i < n; ++i) {
-    for (int j = 0; j < m; ++j) {
-      cout << grid[i][j] << " ";
-    }
-    cout << endl;
-  }*/
-
-  // allocate memory for a secondary grid to hold partial numbers of moves
-  int** moves = new int*[n];
-  for (int i = 0; i < n; ++i) {
-    moves[i] = new int[m];
+    visited[i] = new bool[m];
   }
 
-  // initialize the moves grid with a number higher than the maximum possible number of moves
+  // initialize visited to false
   for (int i = 0; i < n; ++i) {
     for (int j = 0; j < m; ++j) {
-      moves[i][j] = n + m;
+      visited[i][j] = false;
     }
   }
-  moves[0][0] = 0; // start at the top-left
 
-  // traverse grid, updating moves as we go
-  check_adjacent(grid, moves, 0, 0, n, m);
+  // initialize a queue of moves
+  vector<move> moves_queue;
+  move first_move = {0, 0, 0};
+  moves_queue.push_back(first_move);
+
+  // do a BFS of the grid
+  int result = -1;
+  while (!moves_queue.empty()) {
+    move the_move = moves_queue.front();
+    if (the_move.i == n - 1 && the_move.j == m - 1) {
+      result = the_move.count;
+      break;
+    }
     
-  // check the value in the bottom-right corner to conclude the shortest path
-  if (moves[n-1][m-1] == n + m) {
-    cout << "-1" << endl;
-  } else {
-    cout << moves[n-1][m-1] << endl;
+    int i = the_move.i;
+    int j = the_move.j;
+    int c = the_move.count + 1;
+    int d = grid[i][j];
+
+    moves_queue.erase(moves_queue.begin());
+
+    if (i + d < n && !visited[i+d][j]) { // try moving down
+      visited[i+d][j] = true;
+      move new_move = {i+d, j, c};
+      moves_queue.push_back(new_move);
+    }
+    if (i - d >= 0 && !visited[i-d][j]) { // try moving up
+      visited[i-d][j] = true;
+      move new_move = {i-d, j, c};
+      moves_queue.push_back(new_move);
+    }
+    if (j + d < m && !visited[i][j+d]) { // try moving right
+      visited[i][j+d] = true;
+      move new_move = {i, j+d, c};
+      moves_queue.push_back(new_move);
+    }
+    if (j - d >= 0 && !visited[i][j-d]) { // try moving left
+      visited[i][j-d] = true;
+      move new_move = {i, j-d, c};
+      moves_queue.push_back(new_move);
+    }
   }
+
+  cout << result << endl;
 
   // free the memory that was allocated
   for (int i = 0; i < n; ++i) {
     delete[] grid[i];
-    delete[] moves[i];
+    delete[] visited[i];
   }
   delete[] grid;
-  delete[] moves;
+  delete[] visited;
   return 0;
 }
 
-void check_adjacent(int** grid, int** moves, int i, int j, int n, int m) {
-  if (i + grid[i][j] < n) { // try moving down
-    int new_i = i + grid[i][j];
-    if (moves[i][j] + 1 < moves[new_i][j]) { // found a faster route
-      moves[new_i][j] = moves[i][j] + 1;
-      // recursively check all paths from that square
-      check_adjacent(grid, moves, new_i, j, n, m);
-    }
-  }
-  if (i - grid[i][j] >= 0) { // try moving up
-    int new_i = i - grid[i][j];
-    if (moves[i][j] + 1 < moves[new_i][j]) {
-      moves[new_i][j] = moves[i][j] + 1;
-      check_adjacent(grid, moves, new_i, j, n, m);
-    }
-  }
-  if (j + grid[i][j] < m) { // try moving right
-    int new_j = j + grid[i][j];
-    if (moves[i][j] + 1 < moves[i][new_j]) {
-      moves[i][new_j] = moves[i][j] + 1;
-      check_adjacent(grid, moves, i, new_j, n, m);
-    }
-  }
-  if (j - grid[j][j] >= 0) { // try moving left
-    int new_j = j - grid[i][j];
-    if (moves[i][j] + 1 < moves[i][new_j]) {
-      moves[i][new_j] = moves[i][j] + 1;
-      check_adjacent(grid, moves, i, new_j, n, m);
-    }
-  }
-}
