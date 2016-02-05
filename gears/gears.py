@@ -47,11 +47,12 @@ def main():
     result = check_adjacent(gears[0])
     if isinstance(result, bool) and result == True:
         lastGear = gears[len(gears) - 1]
-        a = lastGear.rotation * lastGear.r
+        a = lastGear.r
         b = gears[0].r
         divisor = gcd(a,b)
         a = a // divisor
         b = b // divisor
+        b *= (1 if lastGear.rotation == gears[0].rotation else -1)
         print(str(a) + ' ' + str(b))
     else:
         print(result)
